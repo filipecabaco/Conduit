@@ -1,5 +1,4 @@
 defmodule ConduitCore.Executor.Elixir do
-  import Helpers.Compose
   use GenServer
   
   def start_link do
@@ -8,12 +7,22 @@ defmodule ConduitCore.Executor.Elixir do
   end
   
   def handle_call({:code, operations, input}, _from, _current) when is_list(operations) do
-    res = multicompose(operations).(input)
-    {:reply, res, []}
+    composed = operations
+    |> eval_operations
+    |> Enum.map( fn({f,_}) -> f end )
+    |> compose
+
+    res = composed.(input)
+    {:reply, res, :ok}
   end
 
   def handle_cast({:code, operations, input}, _current) do
-     multicompose(operations).(input)
+    composed = operations
+    |> eval_operations
+    |> Enum.map( fn({f,_}) -> f end )
+    |> compose
+
+    composed.(input)
     {:noreply, :ok}
   end
 
@@ -25,4 +34,9 @@ defmodule ConduitCore.Executor.Elixir do
     GenServer.cast(__MODULE__, {:code, operations, input})
   end
 
+  defp eval_operations(operations) when is_list(operations), do: Enum.map(operations, &(Code.eval_string/1))
+  defp eval_operations(operation), do: [Code.eval_string(operation)]
+
+  defp compose(f, g), do: fn(x) -> f.(g.(x)) end
+  defp compose(fs) when is_list(fs), do: List.foldl(fs, fn(x) -> x end, &compose/2)
 end
