@@ -22,15 +22,15 @@ defmodule ConduitCore.Executor.Elixir do
     |> Enum.map( fn({f,_}) -> f end )
     |> compose
 
-    composed.(input)
+    spawn(fn()-> composed.(input) end)
     {:noreply, :ok}
   end
 
-  def execute_sync(operations, input) do
+  def execute(operations, input, :sync) do
     GenServer.call(__MODULE__, {:code, operations, input})
   end
   
-  def execute_async(operations, input) do
+  def execute(operations, input, :async) do
     GenServer.cast(__MODULE__, {:code, operations, input})
   end
 
