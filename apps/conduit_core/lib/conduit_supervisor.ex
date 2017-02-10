@@ -8,16 +8,9 @@ defmodule ConduitCore.Supervisor do
 
   def init(_) do
     children = [
-      worker(ConduitCore.Executor.Elixir, [], restart: :transient)
+      supervisor(ConduitCore.Supervisor.Elixir, [])
     ]
-    supervise(children, strategy: :simple_one_for_one)
+    supervise(children, strategy: :one_for_one)
     |> IO.inspect
-  end
-
-  def execute(operations, input, :elixir) do
-    {:ok, pid} = Supervisor.start_child(ConduitCore.Supervisor, [])
-    result = GenServer.call(pid, {:code, operations, input})
-    Supervisor.terminate_child(ConduitCore.Supervisor, pid)
-    result
   end
 end
