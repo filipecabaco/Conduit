@@ -1,16 +1,19 @@
 defmodule ConduitCore.Supervisor do
   use Supervisor
+  import Logger
 
   def start_link(_type, _args) do
-    Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
-    |> IO.inspect
+    res = Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
+    info(inspect(res))
+    res
   end
 
   def init(_) do
     children = [
       supervisor(ConduitCore.Supervisor.Elixir, [])
     ]
-    supervise(children, strategy: :one_for_one)
-    |> IO.inspect
+    res = supervise(children, strategy: :one_for_one)
+    info(inspect(res))
+    res
   end
 end
