@@ -1,18 +1,7 @@
 defmodule ConduitCore do
-  @moduledoc """
-  Documentation for ConduitCore.
-  """
+  use Application
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> ConduitCore.hello
-      :world
-
-  """
-  def hello do
-    :world
+  def start(type, args) do
+    ConduitCore.Supervisor.start_link(type, args)
   end
 end
